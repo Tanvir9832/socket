@@ -1,7 +1,24 @@
-const express = require("express");
-const mongoose = require("mongoose");
+import express from "express";
+import mongoose from "mongoose";
+import dotenv from "dotenv";
+import { Server } from "socket.io";
+import { createServer } from "http";
+import cors  from "cors";
+
+dotenv.config();
+
 const app = express();
-require("dotenv").config();
+
+
+app.use(cors());
+const server = createServer(app);
+const io = new Server(server , {
+    cors : {
+        origin : "*",
+        methods : ["GET", "POST"],
+        credentials : true
+    }
+});
 
 (async function(){
     try {
@@ -13,7 +30,16 @@ require("dotenv").config();
 })();
 
 app.get("/",()=>{
-    res.send("HI");
+    
 })
 
-app.listen(process.env.PORT,()=>{console.log("server started")});
+
+io.on("connection",(socket)=>{
+    console.log(socket.id);
+    socket.emit("A", socket.id);
+    socket.on("hi",(data)=>{
+        console.log(data);
+    })
+})
+
+server.listen(process.env.PORT,()=>{console.log("server started")});
